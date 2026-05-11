@@ -15,6 +15,10 @@
  */
 package io.serverlessworkflow.impl.executors;
 
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import io.serverlessworkflow.api.types.Set;
 import io.serverlessworkflow.api.types.SetTask;
 import io.serverlessworkflow.api.types.SetTaskConfiguration;
@@ -61,7 +65,21 @@ public class SetExecutor extends RegularTaskExecutor<SetTask> {
   @Override
   protected CompletableFuture<WorkflowModel> internalExecute(
       WorkflowContext workflow, TaskContext taskContext) {
-    return CompletableFuture.completedFuture(
-        setFilter.apply(workflow, taskContext, taskContext.input()));
+    Tracer tracer = GlobalOpenTelemetry.getTracer("sdk-java.instrumentation");
+    //    Tracer tracer = OpenTelemetry.noop().getTracer("io.quarkus.opentelemetry");
+    Span span =
+        tracer
+            .spanBuilder("set-span-on-sdk")
+            .startSpan()
+            .setAttribute("workflow.id", workflow.instance().id());
+    try (Scope scope = span.makeCurrent()) {
+      System.out.println(
+          "Set-on-span-on-sdk: Emulating real work execution, Thread: "
+              + Thread.currentThread().getName());
+      return CompletableFuture.completedFuture(
+          setFilter.apply(workflow, taskContext, taskContext.input()));
+    } finally {
+      span.end();
+    }
   }
 }
