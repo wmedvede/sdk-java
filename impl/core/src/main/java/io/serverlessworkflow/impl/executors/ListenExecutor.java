@@ -204,7 +204,7 @@ public abstract class ListenExecutor extends RegularTaskExecutor<ListenTask> {
           if (at != null) {
             taskContext.variables().put(at, arrayNode.size());
           }
-          TaskExecutorHelper.processTaskList(t, workflow, Optional.of(taskContext), node)
+          TaskExecutorHelper.processTaskList(t, workflow, Optional.of(taskContext), node, position)
               .thenAccept(n -> internalProcessCe(n, arrayNode, workflow, taskContext, future));
         },
         () -> internalProcessCe(node, arrayNode, workflow, taskContext, future));

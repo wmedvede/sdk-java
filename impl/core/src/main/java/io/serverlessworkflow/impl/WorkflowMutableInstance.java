@@ -99,7 +99,8 @@ public class WorkflowMutableInstance implements WorkflowInstance {
                                 .definition()
                                 .inputFilter()
                                 .map(f -> f.apply(workflowContext, null, input))
-                                .orElse(input))
+                                .orElse(input),
+                            null)
                         .whenComplete(this::whenCompleted)
                         .thenApply(this::whenSuccess)
                         .thenCompose(

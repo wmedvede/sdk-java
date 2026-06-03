@@ -52,6 +52,6 @@ public class DoExecutor extends RegularTaskExecutor<DoTask> {
   protected CompletableFuture<WorkflowModel> internalExecute(
       WorkflowContext workflow, TaskContext taskContext) {
     return TaskExecutorHelper.processTaskList(
-        taskExecutor, workflow, Optional.of(taskContext), taskContext.input());
+        taskExecutor, workflow, Optional.of(taskContext), taskContext.input(), position);
   }
 }

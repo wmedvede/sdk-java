@@ -95,7 +95,7 @@ public class ForExecutor extends RegularTaskExecutor<ForTask> {
       taskContext.variables().put(task.getFor().getAt(), newIndex);
       if (whileExpr.map(w -> w.test(workflow, taskContext, input)).orElse(true)) {
         return TaskExecutorHelper.processTaskList(
-                taskExecutor, workflow, Optional.of(taskContext), input)
+                taskExecutor, workflow, Optional.of(taskContext), input, position)
             .thenCompose(output -> buildLoopFuture(workflow, taskContext, output, iter, newIndex));
       }
     }

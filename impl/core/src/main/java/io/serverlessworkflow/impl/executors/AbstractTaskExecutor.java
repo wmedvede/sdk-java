@@ -194,15 +194,23 @@ public abstract class AbstractTaskExecutor<T extends TaskBase> implements TaskEx
     if (transition.isEndNode()) {
       workflow.instance().status(WorkflowStatus.COMPLETED);
     } else if (transition.next() != null) {
-      return transition.next().apply(workflow, taskContext.parent(), taskContext.output());
+      return transition
+          .next()
+          .apply(workflow, taskContext.parent(), taskContext.output(), taskContext.position());
     }
     return CompletableFuture.completedFuture(taskContext);
   }
 
   @Override
   public CompletableFuture<TaskContext> apply(
-      WorkflowContext workflowContext, Optional<TaskContext> parentContext, WorkflowModel input) {
-    TaskContext taskContext = new TaskContext(input, position, parentContext, taskName, task);
+      WorkflowContext workflowContext,
+      Optional<TaskContext> parentContext,
+      WorkflowModel input,
+      WorkflowPosition previousTask) {
+    TaskContext taskContext = new TaskContext(input, this.position, parentContext, taskName, task);
+    if (previousTask != null) {
+      taskContext.variables().put("previous-task", previousTask.jsonPointer());
+    }
     workflowContext.instance().restoreContext(workflowContext, taskContext);
     CompletableFuture<TaskContext> completable = CompletableFuture.completedFuture(taskContext);
     if (!TaskExecutorHelper.isActive(workflowContext)) {
@@ -210,7 +218,7 @@ public abstract class AbstractTaskExecutor<T extends TaskBase> implements TaskEx
     } else if (taskContext.isCompleted()) {
       return executeNext(completable, workflowContext);
     } else if (ifFilter.map(f -> f.test(workflowContext, taskContext, input)).orElse(true)) {
-      taskContext.iteration(workflowContext.instance().incIteration(position));
+      taskContext.iteration(workflowContext.instance().incIteration(this.position));
       completable =
           completable
               .thenCompose(workflowContext.instance()::suspendedCheck)

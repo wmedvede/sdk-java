@@ -23,6 +23,7 @@ import io.serverlessworkflow.api.types.TaskBase;
 import io.serverlessworkflow.api.types.Use;
 import io.serverlessworkflow.impl.WorkflowDefinition;
 import io.serverlessworkflow.impl.WorkflowMutablePosition;
+import io.serverlessworkflow.impl.WorkflowPosition;
 import io.serverlessworkflow.impl.WorkflowUtils;
 import io.serverlessworkflow.impl.WorkflowValueResolver;
 import io.serverlessworkflow.impl.resources.ExternalResourceHandler;
@@ -32,6 +33,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public class CallFunctionExecutorBuilder implements CallableTaskBuilder<CallFunction> {
+
+  private WorkflowPosition position;
 
   @Override
   public CallableTaskFactory init(
@@ -128,7 +131,8 @@ public class CallFunctionExecutorBuilder implements CallableTaskBuilder<CallFunc
             .apply(
                 w,
                 Optional.of(t),
-                w.definition().application().modelFactory().fromAny(args.apply(w, t, m)))
+                w.definition().application().modelFactory().fromAny(args.apply(w, t, m)),
+                position)
             .thenApply(o -> o.output());
   }
 }

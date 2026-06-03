@@ -75,7 +75,8 @@ public class ForkExecutor extends RegularTaskExecutor<ForkTask> {
       futures.put(
           entry.getKey(),
           initial.thenComposeAsync(
-              t -> entry.getValue().apply(workflow, Optional.of(t), t.input()), service));
+              t -> entry.getValue().apply(workflow, Optional.of(t), t.input(), t.position()),
+              service));
     }
     return CompletableFuture.allOf(
             futures.values().toArray(new CompletableFuture<?>[futures.size()]))

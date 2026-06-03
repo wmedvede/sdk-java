@@ -19,11 +19,15 @@ import io.serverlessworkflow.api.types.TaskBase;
 import io.serverlessworkflow.impl.TaskContext;
 import io.serverlessworkflow.impl.WorkflowContext;
 import io.serverlessworkflow.impl.WorkflowModel;
+import io.serverlessworkflow.impl.WorkflowPosition;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @FunctionalInterface
 public interface TaskExecutor<T extends TaskBase> {
   CompletableFuture<TaskContext> apply(
-      WorkflowContext workflowContext, Optional<TaskContext> parentContext, WorkflowModel input);
+      WorkflowContext workflowContext,
+      Optional<TaskContext> parentContext,
+      WorkflowModel input,
+      WorkflowPosition previousTask);
 }

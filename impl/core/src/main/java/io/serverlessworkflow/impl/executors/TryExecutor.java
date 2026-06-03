@@ -155,7 +155,7 @@ public class TryExecutor extends RegularTaskExecutor<TryTask> {
       WorkflowContext workflow, TaskContext taskContext, WorkflowModel model) {
     retryIntervalExecutor.ifPresent(r -> r.init(workflow, taskContext, model));
     return TaskExecutorHelper.processTaskList(
-            taskExecutor, workflow, Optional.of(taskContext), model)
+            taskExecutor, workflow, Optional.of(taskContext), model, position)
         .exceptionallyCompose(e -> handleException(e, workflow, taskContext));
   }
 
@@ -184,7 +184,11 @@ public class TryExecutor extends RegularTaskExecutor<TryTask> {
               completable.thenCompose(
                   model ->
                       TaskExecutorHelper.processTaskList(
-                          catchTaskExecutor.get(), workflow, Optional.of(taskContext), model));
+                          catchTaskExecutor.get(),
+                          workflow,
+                          Optional.of(taskContext),
+                          model,
+                          position));
         }
         if (retryIntervalExecutor.isPresent()) {
           completable =

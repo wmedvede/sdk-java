@@ -21,6 +21,7 @@ import io.serverlessworkflow.impl.WorkflowContext;
 import io.serverlessworkflow.impl.WorkflowDefinition;
 import io.serverlessworkflow.impl.WorkflowModel;
 import io.serverlessworkflow.impl.WorkflowMutablePosition;
+import io.serverlessworkflow.impl.WorkflowPosition;
 import io.serverlessworkflow.impl.WorkflowStatus;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -37,9 +38,10 @@ public class TaskExecutorHelper {
       TaskExecutor<?> taskExecutor,
       WorkflowContext context,
       Optional<TaskContext> parentTask,
-      WorkflowModel input) {
+      WorkflowModel input,
+      WorkflowPosition previousTask) {
     return taskExecutor
-        .apply(context, parentTask, input)
+        .apply(context, parentTask, input, previousTask)
         .thenApply(
             t -> {
               parentTask.ifPresent(p -> p.rawOutput(t.output()));

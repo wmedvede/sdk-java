@@ -65,21 +65,32 @@ public class SetExecutor extends RegularTaskExecutor<SetTask> {
   @Override
   protected CompletableFuture<WorkflowModel> internalExecute(
       WorkflowContext workflow, TaskContext taskContext) {
+
+    Span taskSpan = (Span) taskContext.variables().get("otel-task-span");
+
     Tracer tracer = GlobalOpenTelemetry.getTracer("sdk-java.instrumentation");
     //    Tracer tracer = OpenTelemetry.noop().getTracer("io.quarkus.opentelemetry");
-    Span span =
-        tracer
-            .spanBuilder("set-span-on-sdk")
-            .startSpan()
-            .setAttribute("workflow.id", workflow.instance().id());
-    try (Scope scope = span.makeCurrent()) {
+    if (taskSpan != null) {
+      try (Scope scope = taskSpan.makeCurrent()) {
+
+        System.out.println(
+            "SetWork emulation: emulation spans internally produced by real work execution, ej. Http call , Thread: "
+                + Thread.currentThread().getName());
+        Span internalSpan =
+            tracer
+                .spanBuilder("emulate-span-produced-during-actual-execution")
+                .setAttribute("http-call", "http://external.service.com")
+                .startSpan();
+        internalSpan.end();
+
+        return CompletableFuture.completedFuture(
+            setFilter.apply(workflow, taskContext, taskContext.input()));
+      }
+    } else {
       System.out.println(
-          "Set-on-span-on-sdk: Emulating real work execution, Thread: "
-              + Thread.currentThread().getName());
+          "SetWork emulation: NO context was configured: " + Thread.currentThread().getName());
       return CompletableFuture.completedFuture(
           setFilter.apply(workflow, taskContext, taskContext.input()));
-    } finally {
-      span.end();
     }
   }
 }
