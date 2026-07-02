@@ -15,6 +15,8 @@
  */
 package io.serverlessworkflow.impl.executors.http;
 
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.context.Scope;
 import io.serverlessworkflow.impl.TaskContext;
 import io.serverlessworkflow.impl.WorkflowApplication;
 import io.serverlessworkflow.impl.WorkflowContext;
@@ -46,6 +48,15 @@ class WithBodyRequestExecutor extends AbstractRequestExecutor {
       WorkflowContext workflow,
       TaskContext task,
       WorkflowModel model) {
-    return request.method(method, converter.toEntity(bodyFilter.apply(workflow, task, model)));
+    Span taskSpan = (Span) task.variables().get("otel-task-span");
+    if (taskSpan != null) {
+      try (Scope scope = taskSpan.makeCurrent()) {
+        System.out.println("WithBodyRequestExecutor otel-task-span configured.");
+        return request.method(method, converter.toEntity(bodyFilter.apply(workflow, task, model)));
+      }
+    } else {
+      System.out.println("WithBodyRequestExecutor NO otel-task-span configured.");
+      return request.method(method, converter.toEntity(bodyFilter.apply(workflow, task, model)));
+    }
   }
 }
